@@ -1,22 +1,22 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import IdentificationPage from '@/components/IdentificationPage.vue';
-import MainPage from '@/components/Home.vue';
+import Login from '@/components/Login.vue'; // Login Page
+import Chat from '@/components/Chat.vue';   // Chat Page
 
 const routes = [
   {
-    path: '/identification',
-    name: 'Identification',
-    component: IdentificationPage,
+    path: '/',
+    name: 'Login',
+    component: Login, // Redirecionamento inicial
   },
   {
-    path: '/',
-    name: 'MainPage',
-    component: MainPage,
+    path: '/chat',
+    name: 'Chat',
+    component: Chat, // A página de Chat
   },
 ];
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHistory(),
   routes,
 });
 

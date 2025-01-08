@@ -1,0 +1,84 @@
+<template>
+  <div class="flex flex-col justify-center items-center min-h-screen bg-[#628281]">
+    <div class="w-full max-w-lg p-8 bg-white rounded-xl shadow-lg">
+      <h2 class="text-center text-3xl font-extrabold text-[#628281] mb-8">Bem-vindo ao P2PChat</h2>
+      <form @submit.prevent="handleSubmit" class="space-y-6">
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-600">Nome de Usuário</label>
+          <input 
+            type="text" 
+            id="username" 
+            v-model="username" 
+            required 
+            class="mt-2 w-full p-4 border border-[#628281] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#628281] focus:border-transparent transition duration-200" 
+            placeholder="Digite seu nome de usuário"
+          />
+        </div>
+        <div>
+          <label for="profilePicture" class="block text-sm font-medium text-gray-600">Foto de Perfil</label>
+          <input 
+            type="file" 
+            id="profilePicture" 
+            @change="handleFileUpload" 
+            accept="image/*" 
+            required 
+            class="mt-2 w-full p-4 border border-[#628281] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#628281] focus:border-transparent transition duration-200"
+          />
+        </div>
+        <button 
+          type="submit" 
+          class="w-full py-4 mt-6 bg-[#628281] text-white text-lg font-semibold rounded-lg shadow-md hover:bg-[#506c67] focus:outline-none focus:ring-2 focus:ring-[#628281] transition duration-200"
+        >
+          Entrar
+        </button>
+      </form>
+    </div>
+
+    <!-- Footer Component -->
+    <Footer />
+  </div>
+</template>
+
+<script>
+import Footer from '../components/shared/footer.vue';
+
+export default {
+  components: {
+    Footer,
+  },
+  data() {
+    return {
+      username: '',
+      profilePicture: null,
+    };
+  },
+  methods: {
+    handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.profilePicture = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    handleSubmit() {
+      if (this.username && this.profilePicture) {
+        const userData = {
+          username: this.username,
+          profilePicture: this.profilePicture,
+        };
+        // Armazene os dados do usuário conforme necessário
+        // Por exemplo, você pode usar Vuex ou localStorage
+        // localStorage.setItem('userData', JSON.stringify(userData));
+        this.$router.push({ name: 'Chat' }); // Redireciona para a página de chat
+      }
+    },
+  },
+};
+</script>
+
+<style scoped>
+/* O estilo já está sendo gerido pelo Tailwind CSS */
+</style>

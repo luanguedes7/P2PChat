@@ -1,6 +1,7 @@
-import { createApp } from 'vue'
-import './style.css'
-import App from './App.vue'
+import { createApp } from 'vue';
+import './style.css';
+import App from './App.vue';
+import router from './router'; // Importa o Vue Router
 
 // Importações do Font Awesome
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -14,8 +15,11 @@ library.add(fas, fab);
 // Criação da aplicação Vue
 const app = createApp(App);
 
-// Registra o componente globalmente
+// Registra globalmente o Font Awesome
 app.component('font-awesome-icon', FontAwesomeIcon);
+
+// Usa o Vue Router
+app.use(router);
 
 // Monta a aplicação
 app.mount('#app');
