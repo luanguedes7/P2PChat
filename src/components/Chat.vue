@@ -14,9 +14,13 @@
     </div>
 
   </div>
-  <div class="w-full bg-[#628281] flex items-center justify-center mt-20">
+
+
+  <div class="mt-11 w-full bg-[#628281] rounded-3xl">
+      <!-- Footer Component -->
       <Footer />
   </div>
+
 </template>
 
 <script setup>

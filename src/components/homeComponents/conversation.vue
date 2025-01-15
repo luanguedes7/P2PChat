@@ -3,11 +3,8 @@
     <div v-if="currentSection === 'conversa'">
     
       <!-- Header -->
-      <div class="bg-[#43655a] py-2 px-3 rounded-tr-xl flex justify-between">
-        <img :src="imageUrl" :alt="name" class="rounded-full w-9 h-9 ml-[365px]">
-        <div class="col-span-1 mt-1 cursor-pointer hover:bg-[#889fa5] text-white bg-[#628281] font-semibold p-1 rounded-lg transition-all duration-300 ease-linear">
-          <font-awesome-icon :icon="['fas', 'file']" class="mx-1" />
-        </div>
+      <div class="bg-[#43655a] py-2 px-3 rounded-tr-xl flex justify-center">
+          <img :src="imageUrl" :alt="name" class="rounded-full w-9 h-9">
       </div>
 
       <!-- Dynamic Content -->
@@ -22,9 +19,6 @@
               type="text" 
               placeholder="Digite uma mensagem" 
               class="font-medium p-1 bg-transparent text-[#43655a] placeholder-[#B0B3B8] focus:outline-none rounded-l-xl transition duration-500 ease-linear flex-grow">
-            <button class="mx-2"><font-awesome-icon :icon="['fas', 'file-export']" class="text-[#B0B3B8]" /></button>
-            <button class="mx-2"><font-awesome-icon :icon="['fas', 'video']" class="text-[#B0B3B8]" /></button>
-            <button class="ml-2 mr-3"><font-awesome-icon :icon="['fas', 'images']" class="text-[#B0B3B8]" /></button>
             <button type="submit" class="hidden"></button>
           </div>
         </form>

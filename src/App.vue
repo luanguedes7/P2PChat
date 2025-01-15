@@ -10,8 +10,7 @@ import NavBar from './components/shared/navBar.vue';
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  text-align: center;
+  font-family: 'Roboto', sans-serif;
   color: #2c3e50;
   margin-top: 60px;
 }
