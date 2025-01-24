@@ -5,9 +5,12 @@
                 <h1 class="text-3xl font-semibold text-white">Peers Ativos</h1>
             </div>
             <div class="h-[549.7px]">
-                <UserChat :imageUrl="'src/assets/img/logoUser.png'" :name="'Luan Guedes'" />
-                <UserChat :imageUrl="'src/assets/img/logoUser.png'" :name="'Heitor'" />
-                <UserChat :imageUrl="'src/assets/img/logoUser.png'" :name="'Eduardo'" />
+                        <UserChat
+                          v-for="(peer, index) in activePeers"
+                          :key="index"
+                          :imageUrl="'src/assets/img/logoUser.png'"
+                          :name="peer.username"
+                        />
             </div>
             <NavBar :currentSection="currentSection" @section-changed="updateSection" />
         </div>
@@ -27,12 +30,15 @@
 <script>
 import UserChat from "../shared/userChat.vue";
 import NavBar from "../shared/navBar.vue";
+import { connectWebSocket, sendMessage } from "../../trackerintegration/tracker.js";
 
 export default {
   components: { UserChat, NavBar },
   data() {
     return {
       currentSection: "conversa", // Armazenar a seção atual localmente
+      socket: null,
+      activePeers: [],
     };
   },
   methods: {
@@ -40,6 +46,51 @@ export default {
       this.currentSection = section;
       this.$emit('section-changed', section); // Retransmite o evento para o componente pai
     },
+
+    handleMessage(data) {
+      // Processa as mensagens recebidas
+      const messageType = data[0]; // Tipo da mensagem
+      const messageContent = data.slice(1); // Conteúdo da mensagem
+
+      if (messageType === "3") {
+        // Mensagem de lista de peers ativos
+        try {
+          const peers = JSON.parse(messageContent);
+          this.activePeers = peers; // Atualiza a lista de peers ativos
+        } catch (error) {
+          console.error("[ERROR] Falha ao parsear lista de peers:", error);
+        }
+      }
+    },
+
+    handleError(error) {
+      console.error("[ERROR] WebSocket erro:", error);
+    },
+
+    handleClose() {
+      console.log("[INFO] Conexão WebSocket encerrada.");
+    },
+
+    requestPeers() {
+      // Envia mensagem para solicitar a lista de peers ativos
+      sendMessage("3\n");
+    },
+
   },
+
+  mounted() {
+    connectWebSocket("ws://localhost:9595", this.handleMessage, this.handleError, this.handleClose)
+      .then((socket) => {
+        // Agora que a conexão foi aberta, envie uma mensagem
+        return sendMessage("3\n");
+      })
+      .then((response) => {
+        console.log(response); // Mensagem enviada com sucesso
+      })
+      .catch((error) => {
+        console.error("Erro: ", error); // Se ocorrer algum erro, seja na conexão ou no envio
+      });
+    }
+
 };
 </script>
