@@ -13,7 +13,7 @@ class FileStream {
 		this.file = selected_file;
 		this.stream = this.file.stream();	
 		this.reader = this.getReader();
-		this.buffer = new Int8Array(buffer_size);
+		this.buffer = new Uint8Array(buffer_size);
 		this.isClosed = false;
 		this.isEOF = false;
 	}
@@ -47,7 +47,7 @@ class FileStream {
 				break;
 			}
 			
-			buffer[counter] = value;
+			this.buffer[counter] = value;
 			counter += 1;
 		}
 
@@ -56,7 +56,7 @@ class FileStream {
 	
 	//Retorna um Int8Array com os dados lidos
 	public getBufferedData() {
-		return buffer;
+		return this.buffer;
 	}
 
 	//Fecha a readable stream
