@@ -83,6 +83,8 @@
       <div v-if="currentSection === 'arquivos'" class="p-4 text-white col-span-7">
         <h2 class="text-xl font-semibold">Seção de Arquivos</h2>
         <p>Aqui devem estar os arquivos da rede</p>
+        <input type="file" @change="setFile"/>
+        <button @click="sendFileInfo()">Upload</button>
       </div>
     </div>
   </div>
@@ -104,6 +106,8 @@ export default {
       activePeers: [],
       peer: null,
       peerId: null, // ID do Peer atual
+      fileName: null,
+      fileObject: null,
       currentConnection: null,
       currentPeer: null, // Informações do peer atual conectado
     };
@@ -113,6 +117,20 @@ export default {
     updateSection(section) {
       this.currentSection = section;
       this.$emit("section-changed", section);
+    },
+
+    setFile(change_file_event) {
+      this.fileName = change_file_event.target.files[0].name;
+      this.fileObject = change_file_event.target.files[0];
+      console.log(`[INFO] O arquivo ${this.FileName} foi selecionado para upload.`);
+    },
+
+    sendFileInfo() {
+        if (this.fileName) {
+      	  this.trackerSocket.send("1"+this.fileName+"\n");
+        }else{
+          console.log("[ERROR] Nenhum arquivo foi selecionado.");
+        }
     },
 
     handlePeerClick(peer) {
