@@ -23,7 +23,16 @@
         <div class="bg-[#43655a] py-2 px-3 rounded-tl-xl">
           <h1 class="text-3xl font-semibold text-white">Arquivos</h1>
         </div>
-        <div class="h-[549.7px]"></div>
+        <div class="h-[549.7px] overflow-y-auto">
+          <FileList
+            v-for="(file_info, index) in activeFiles"
+            :key="index"
+            :imageUrl="'src/assets/img/logoUser.png'"
+            :name="String(file_info.Username)"
+			:file="String(file_info.FileName)"
+            @click="handleFileClick(file_info)"
+          />
+		</div>
         <NavBar :currentSection="currentSection" @section-changed="updateSection" />
       </div>
     </section>
@@ -108,11 +117,12 @@
 
 <script>
 import UserChat from "../shared/userChat.vue";
+import FileList from "../shared/filesList.vue";
 import NavBar from "../shared/navBar.vue";
 import Peer from "peerjs";
 
 export default {
-  components: { UserChat, NavBar },
+  components: { UserChat, NavBar, FileList },
   data() {
     return {
       msg: "", // Mensagem do input
@@ -120,12 +130,17 @@ export default {
       currentSection: "conversa",
       socket: null,
       activePeers: [],
+      activeFiles: [],
+      fileToDownload: null,
       peer: null,
       peerId: null, // ID do Peer atual
       fileName: null,
       fileObject: null,
       currentConnection: null,
       currentPeer: null, // Informações do peer atual conectado
+      downloader: null,
+      uploader: null,
+      forwarder: null
     };
   },
 
@@ -171,6 +186,10 @@ export default {
       });
     },
 
+    handleFileClick(file_info){
+      this.fileToDownload = file_info;
+    },
+
     sendMessage() {
       if (this.currentConnection && this.msg.trim()) {
         const message = {
@@ -214,17 +233,28 @@ export default {
           });
           this.trackerSocket.send(`2${userDataMessage}\n`);
           this.trackerSocket.send("3\n");
+		  this.trackerSocket.send("4\n");
         };
 
         this.trackerSocket.onmessage = (event) => {
           const messageType = event.data[0];
           const messageContent = event.data.slice(1);
+			
+          console.log("[INFO] Mensagem recebida do tracker: " + messageContent);
 
           if (messageType === "3") {
             try {
               this.activePeers = JSON.parse(messageContent);
             } catch (error) {
               console.error("[ERROR] Falha ao parsear lista de peers:", error);
+            }
+          }
+
+          if (messageType === "4") {
+            try {
+              this.activeFiles = JSON.parse(messageContent);
+            } catch (error) {
+              console.error("[ERROR] Falha ao parsear lista de arquivos:", error);
             }
           }
         };
