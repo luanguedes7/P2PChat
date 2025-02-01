@@ -110,8 +110,8 @@
 import UserChat from "../shared/userChat.vue";
 import NavBar from "../shared/navBar.vue";
 import Peer from "peerjs";
-import FileStream from "../filetransfer/filereader.js"
-import FileBuilder from "../filetransfer/filebuilder.js"
+import FileStream from "../../filetransfer/filereader.js"
+import FileBuilder from "../../filetransfer/filebuilder.js"
 
 export default {
   components: { UserChat, NavBar },

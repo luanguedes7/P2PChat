@@ -1,25 +1,17 @@
 export default class FileStream {
-	private file;
-	private stream;
-	private reader;
-	private arrayBuffer;
-	private isClosed;
-	private isEOF;
-	private buffer;
-	private buffer_size;
-	
 	//Inicializa a stream de bytes do arquivo
 	constructor(selected_file, buffer_size) {		
 		this.file = selected_file;
 		this.stream = this.file.stream();	
 		this.reader = this.getReader();
 		this.buffer = new Uint8Array(buffer_size);
+		this.buffer_size = buffer_size;
 		this.isClosed = false;
 		this.isEOF = false;
 	}
 	
 	//Tenta ler 1024 bytes e retorna quantos bytes foram lidos
-	public async readChunck() {
+	async readChunck() {
 		let counter = 0;
 		
 		this.buffer.fill(0, 0, this.buffer_size);
@@ -34,7 +26,7 @@ export default class FileStream {
 			return -1;
 		}
 
-		while (counter < buffer_size);
+		while (counter < buffer_size) {
 			try {
 				const {value, done} = await this.reader.read();
 			} catch(error) {
@@ -55,12 +47,12 @@ export default class FileStream {
 	}
 	
 	//Retorna um Int8Array com os dados lidos
-	public getBufferedData() {
+	getBufferedData() {
 		return this.buffer;
 	}
 
 	//Fecha a readable stream
-	public async close() {
+	async close() {
 		await reader.cancel()
 			.catch((err) => {console.log(`[ERROR] ${err}`)})
 			.then(() => {console.log('[INFO] Leitor de arquivo fechado')});

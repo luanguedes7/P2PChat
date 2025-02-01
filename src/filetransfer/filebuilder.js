@@ -1,18 +1,14 @@
 export default class FileBuilder {
-	private chuncks_array;
-	private blob;
-	private isClosed;
-	private hasBuild;
-	
 	//Inicializa o construtor de arquivo
 	constructor() {
 		this.chuncks_array = [];
 		this.isClosed = false;
 		this.hasBuild = false;
+		this.blob = null;
 	}
 
 	//Adiciona os dados na construção do blob
-	public pushData(binary_data_chunck) {
+	pushData(binary_data_chunck) {
 		if (isClosed) {
 			console.log('[ERROR] Construtor de arquivo está fechado');			
 	
@@ -23,13 +19,13 @@ export default class FileBuilder {
 	}
 
 	//Cria um blob a partir dos dados providenciados
-	public buildFile() {
+	buildFile() {
 		this.blob = new Blob(this.chuncks_array);
 		this.hasBuild = true;	
 	}
 
 	//Faz o download do arquivo a partir do blob
-	public downloadFile(file_name) {
+	downloadFile(file_name) {
 		if (!this.hasBuild) {
 			console.log('[ERRO] Não existe nenhuma build do arquivo');
 			return;
@@ -54,7 +50,7 @@ export default class FileBuilder {
 		document.body.removeChild(download_link);
 	}
 
-	public close() {
+	close() {
 		this.isClosed = true;
 		this.chuncks_array = null;
 	}	
