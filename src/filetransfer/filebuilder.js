@@ -1,4 +1,4 @@
-class FileBuilder {
+export default class FileBuilder {
 	private chuncks_array;
 	private blob;
 	private isClosed;

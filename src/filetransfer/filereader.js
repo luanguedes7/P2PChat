@@ -1,4 +1,4 @@
-class FileStream {
+export default class FileStream {
 	private file;
 	private stream;
 	private reader;
