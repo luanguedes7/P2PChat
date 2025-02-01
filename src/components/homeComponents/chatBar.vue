@@ -80,11 +80,27 @@
           </form>
         </div>
       </div>
-      <div v-if="currentSection === 'arquivos'" class="p-4 text-white col-span-7">
-        <h2 class="text-xl font-semibold">Seção de Arquivos</h2>
-        <p>Aqui devem estar os arquivos da rede</p>
-        <input type="file" @change="setFile"/>
-        <button @click="sendFileInfo()">Upload</button>
+      <div v-if="currentSection === 'arquivos'" class="p-6 text-white col-span-7 bg-[#43655a] rounded-r-lg">
+        <h2 class="text-2xl font-semibold mb-3">Seção de Arquivos</h2>
+        <p class="text-white mb-6">Aqui devem estar os arquivos da rede</p>
+        
+        <div class="space-y-4">
+          <label class="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded cursor-pointer transition-colors inline-block">
+            Selecionar Arquivo
+            <input 
+              type="file" 
+              @change="setFile" 
+              class="hidden"
+            />
+          </label>
+
+          <button 
+            @click="sendFileInfo()"
+            class="ml-4 bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-6 rounded transition-colors"
+          >
+            Enviar
+          </button>
+        </div>
       </div>
     </div>
   </div>

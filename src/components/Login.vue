@@ -52,7 +52,7 @@ export default {
         
         // Redireciona para a página de chat
         this.$router.push({ name: 'Chat' });
-      }
+      }cl
     },
   },
 };
