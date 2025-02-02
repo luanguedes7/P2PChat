@@ -1,6 +1,6 @@
 import { Peer } from "peerjs";
-import FileSharerPrototype from "sharerinterface.js";
-import FileStream from "filereader.js";
+import FileSharerPrototype from "./sharerinterface.js";
+import FileStream from "./filereader.js";
 
 const BUFFER_SIZE = 1024;
 
@@ -37,13 +37,19 @@ export default class FileUploader extends FileSharerPrototype {
 		
 		//Lê os dados, abre uma nova conexão, envia os dados e fecha a conexão
 		while (bytes_read === -1) {
-			for (let i=0; i<list.length; i++) {	
+			for (let i=0; i<list.length; i++) {
+				let continue_flag = false;
+	
 				//Se a conexão não ocorrer, tentar com o próximo peer
 				this.peer.on("error", (err) => {
 					if (err.type === 'peer_unavailable') {
-						continue;
+						continue_flag = true;
 					}
 				});
+
+				if (continue_flag) {
+					continue;
+				}
 
 				this.connectToPeer(list[i].forwarder_id);			
 				

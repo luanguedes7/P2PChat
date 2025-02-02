@@ -1,5 +1,5 @@
 import { Peer } from "peerjs";
-import FileSharerPrototype from "sharerinterface.js";
+import FileSharerPrototype from "./sharerinterface.js";
 
 export default class FileForwarder extends FileSharerPrototype {
 	constructor() {

@@ -1,5 +1,5 @@
-import FileSharerPrototype from "sharerinterface.js";
-import FileBuilder from "filebuilder.js";
+import FileSharerPrototype from "./sharerinterface.js";
+import FileBuilder from "./filebuilder.js";
 
 export default class FileDownloader extends FileSharerPrototype {
 	constructor() {

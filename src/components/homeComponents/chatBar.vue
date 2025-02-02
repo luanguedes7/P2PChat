@@ -81,10 +81,7 @@
                 placeholder="Digite uma mensagem"
                 class="font-medium p-1 bg-transparent text-[#43655a] placeholder-[#B0B3B8] focus:outline-none rounded-l-xl transition duration-500 ease-linear flex-grow"
               />
-              <button type="submit" class="hidden"></button>
-              <div class="bg-[#43655a] text-white p-1 ml-1 cursor-pointer" @click="updatePeers()">
-                <button><font-awesome-icon :icon="['fas', 'rotate-right']" size="lg" /></button>
-              </div>
+              <button type="submit" class="hidden"></button> 
             </div>
           </form>
         </div>
@@ -120,6 +117,9 @@ import UserChat from "../shared/userChat.vue";
 import FileList from "../shared/filesList.vue";
 import NavBar from "../shared/navBar.vue";
 import Peer from "peerjs";
+import FileDownloader from "../../filetransfer/filedownloader.js";
+import FileForwarder from "../../filetransfer/fileforwarder.js";
+import FileUploader from "../../filetransfer/fileuploader.js";
 
 export default {
   components: { UserChat, NavBar, FileList },
@@ -157,8 +157,19 @@ export default {
     },
 
     sendFileInfo() {
-        if (this.fileName) {
-      	  this.trackerSocket.send("1"+this.fileName+"\n");
+         if (this.fileName) {
+		   const fileToUpload = JSON.stringify({
+             Username: userData.username,
+             FileName: this.fileName,
+             UploaderId: uploader.getId()
+           });
+
+      	   this.trackerSocket.send(`1${fileToUpload}\n`);
+          
+           //Configura o uploader para escutar por solicitações 
+           this.uploader.setFileToUpload(this.fileObject);
+           this.uploader.setList(this.activePeers);
+           this.uploader.setDownloadRequestConn();
         }else{
           console.log("[ERROR] Nenhum arquivo foi selecionado.");
         }
@@ -208,12 +219,13 @@ export default {
       }
     },
 
-    updatePeers() {
-        this.trackerSocket.send("3\n");
-    }
   },
 
   async mounted() {
+    this.downloader = new FileDownloader();
+    this.forwarder = new FileForwarder();
+    this.uploader = new FileUploader();
+
     const userData = JSON.parse(localStorage.getItem("userData"));
 
     if (userData) {
@@ -230,6 +242,7 @@ export default {
           const userDataMessage = JSON.stringify({
             Username: userData.username,
             Id: peerId,
+            ForwarderId: this.forwarder.getId()
           });
           this.trackerSocket.send(`2${userDataMessage}\n`);
           this.trackerSocket.send("3\n");
@@ -274,6 +287,11 @@ export default {
       });
 
     }
+
+    setInterval(() => {
+      this.trackerSocket.send("3\n");
+      this.trackerSocket.send("4\n");
+    }, 5000);
   },
 };
 </script>
