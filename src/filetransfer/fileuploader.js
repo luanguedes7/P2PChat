@@ -38,14 +38,14 @@ export default class FileUploader extends FileSharerPrototype {
 		//Lê os dados, abre uma nova conexão, envia os dados e fecha a conexão
 		while (bytes_read === -1) {
 			for (let i=0; i<list.length; i++) {	
-				this.connectToPeer(list[i].forwarder_id);
-				
 				//Se a conexão não ocorrer, tentar com o próximo peer
 				this.peer.on("error", (err) => {
 					if (err.type === 'peer_unavailable') {
 						continue;
 					}
-				});			
+				});
+
+				this.connectToPeer(list[i].forwarder_id);			
 				
 				//Lê um chunck do arquivo
 				bytes_read = await this.file_reader.readChunck();

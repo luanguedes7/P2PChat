@@ -4,17 +4,25 @@ import FileBuilder from "filebuilder.js";
 export default class FileDownloader extends FileSharerPrototype {
 	constructor() {
 		super();
-		this.file_builder = new FileBuilder();
+		this.file_builder = null;
 		this.data_conn = null;
 		this.file_name = null;
 	}
 
 	requestDownload(uploader_id) {
 		this.connectToPeer(uploader_id);
+		
+		this.peer.on("error", (err) => {
+			if (err.type === 'peer_unavailable') {
+				console.log("[ERROR] Não foi possível solicitar o arquivo!");
+			}
+		});
 
 		this.peer_conn.on("open", () => {
+			this.file_builder = new FileBuilder();
+
 			console.log(`[INFO] Solicitando o download do arquivo ${this.file_name}.`);
-			
+				
 			this.peer_conn.on("close", () => {
 				this.peer_conn = null;
 			});
@@ -33,6 +41,7 @@ export default class FileDownloader extends FileSharerPrototype {
 			this.data_conn.on("data", (data) => {
 				let chunck_size = 0;
 				let chunck_data = null;
+				let chunck_order = 0;				
 
 				switch (data[0]) {
 					case 1:
@@ -45,18 +54,16 @@ export default class FileDownloader extends FileSharerPrototype {
 						break;
 					case 2:
 						this.file_builder.buildFile();
-						this.downloadFile()												
+						this.file_builder.downloadFile();												
+						this.file_builder.close();
+						this.file_builder = null;				
 
 						console.log("[INFO] Download concluído com sucesso!");
 						break;
 				}
-			});
 
-			this.data.on("close", () => {
-				this.data_conn = null;				
-
-				console.log("[INFO] Conexão de download finalizada.");
-			});
+				this.data_conn.close();
+			});	
 		});
 	}
 }
