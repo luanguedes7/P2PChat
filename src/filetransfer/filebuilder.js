@@ -2,24 +2,29 @@ export default class FileBuilder {
 	//Inicializa o construtor de arquivo
 	constructor() {
 		this.chuncks_array = [];
+		this.chuncks_map = new Map();
 		this.isClosed = false;
 		this.hasBuild = false;
 		this.blob = null;
 	}
 
 	//Adiciona os dados na construção do blob
-	pushData(binary_data_chunck) {
+	pushData(binary_data_chunck, index) {
 		if (isClosed) {
 			console.log('[ERROR] Construtor de arquivo está fechado');			
 	
 			return;
 		}
 
-		this.chuncks_array.push(binary_data_chunck);
+		this.chuncks_map.set(index, binary_data_chunck);
 	}
 
 	//Cria um blob a partir dos dados providenciados
 	buildFile() {
+		for (let i=0; i<chuncks_map.size; i++) {
+			chuncks_array.push(chuncks_map.get(i));
+		}
+
 		this.blob = new Blob(this.chuncks_array);
 		this.hasBuild = true;	
 	}
