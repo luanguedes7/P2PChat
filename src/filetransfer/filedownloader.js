@@ -2,15 +2,25 @@ import FileSharerPrototype from "sharerinterface.js";
 import FileBuilder from "filebuilder.js";
 
 export default class FileDownloader extends FileSharerPrototype {
-	constructor(file_name) {
+	constructor() {
 		super();
 		this.file_builder = new FileBuilder();
 		this.data_conn = null;
-		this.file_name = file_name;
+		this.file_name = null;
 	}
 
-	getId() {
-		return this.peer.id;
+	requestDownload(uploader_id) {
+		this.connectToPeer(uploader_id);
+
+		this.peer_conn.on("open", () => {
+			console.log(`[INFO] Solicitando o download do arquivo ${this.file_name}.`);
+			
+			this.peer_conn.on("close", () => {
+				this.peer_conn = null;
+			});
+
+			uploader_conn.send(this.getId());
+		});	
 	}
 
 	setDownloadConn() {

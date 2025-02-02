@@ -4,7 +4,6 @@ import FileSharerPrototype from "sharerinterface.js";
 export default class FileForwarder extends FileSharerPrototype {
 	constructor() {
 		super();
-		this.receiver_peer = new Peer();
 		this.receiver_conn = null;
 	}
 	
@@ -16,17 +15,17 @@ export default class FileForwarder extends FileSharerPrototype {
 
 			this.peer_conn.on("close", () => {
 				console.log("[INFO] Fechando conexão de encaminhamento de dados.");
+				this.peer_conn = null;
 			});
 
 			this.peer_conn.send(data);
-			this.peer_conn.close();
-			this.peer_conn = null;
+			this.peer_conn.close();	
 		});		
 	}
 	
 	//Configura a conexão com o peer que está realizando o upload do arquivo
 	setConnToReceiveData() {
-		this.receiver_peer.on("connection", (data_conn) => {
+		this.peer.on("connection", (data_conn) => {
 			console.log("[INFO] Criando conexão para receber dados do uploader.");
 
 			this.receiver_conn = data_conn;
@@ -41,7 +40,6 @@ export default class FileForwarder extends FileSharerPrototype {
 				const chunck = data[1];
 
 				this.forwardData(downloader_id, chunck);
-				this.receiver_conn.close();
 			});
 		});
 		

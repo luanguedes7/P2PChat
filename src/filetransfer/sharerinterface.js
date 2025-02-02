@@ -7,6 +7,10 @@ export default class FileSharerPrototype {
 		this.peer_conn = null;
 	}
 
+	getId() {
+		return this.peer.id;
+	}
+
 	connectToPeer(partner_id) {
 		this.peer_conn = this.peer.connect(partner_id);
 	}
