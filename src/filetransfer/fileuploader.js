@@ -1,3 +1,4 @@
+import { Peer } from "peerjs";
 import FileSharerPrototype from "sharerinterface.js";
 
 export default class FileUploader extends FileSharerPrototype {
