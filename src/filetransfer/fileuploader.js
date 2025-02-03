@@ -2,13 +2,12 @@ import { Peer } from "peerjs";
 import FileSharerPrototype from "./sharerinterface.js";
 import FileStream from "./filereader.js";
 
-const BUFFER_SIZE = 1024;
-
 export default class FileUploader extends FileSharerPrototype {
 	constructor() {
 		super();
 		this.peers_list = null;
 		this.file_reader = null;
+		this.file_object = null;
 	}
 
 	setList(list) {
@@ -16,7 +15,8 @@ export default class FileUploader extends FileSharerPrototype {
 	}
 
 	setFileToUpload(file_object) {
-		this.file_reader = new FileStream(file_object, BUFFER_SIZE);
+		this.file_object = file_object;
+		this.file_reader = new FileStream(file_object);
 	}
 
 	//Configura a conexão de requisição de download
@@ -93,6 +93,6 @@ export default class FileUploader extends FileSharerPrototype {
 		
 		//Após o arquivo inteiro ser enviado, o leitor de arquivos é fechado
 		await this.file_reader.close();
-		this.file_reader = null;
+		this.file_reader = new FileStream(this.file_object);
 	}
 }

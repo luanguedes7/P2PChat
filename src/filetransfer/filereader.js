@@ -1,11 +1,10 @@
 export default class FileStream {
 	//Inicializa a stream de bytes do arquivo
-	constructor(selected_file, buffer_size) {		
+	constructor(selected_file) {		
 		this.file = selected_file;
 		this.stream = this.file.stream();	
 		this.reader = this.stream.getReader();
 		this.buffer = null;
-		this.buffer_size = 0;
 		this.isClosed = false;
 		this.isEOF = false;
 	}
@@ -24,22 +23,20 @@ export default class FileStream {
 			return -1;
 		}
 
-		while (!this.isEOF) {
-			try {
-				const {value, done} = await this.reader.read();
-							
-				if (done) {
-					this.isEOF = true;
-					break;
-				}
-				
-				this.buffer = value;
-				counter = this.buffer.length;
-			} catch(error) {
-				console.log(`[INFO] ${error}`);
-				break;
+		try {
+			const {value, done} = await this.reader.read();
+						
+			if (done) {
+				this.isEOF = true;
+				return -1;
 			}
-		}
+			
+			this.buffer = value;
+			counter = this.buffer.length;
+		} catch(error) {
+			console.log(`[INFO] ${error}`);
+			return -1;
+		}	
 
 		return counter;
 	}
