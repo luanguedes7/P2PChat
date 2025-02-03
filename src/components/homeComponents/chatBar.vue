@@ -107,6 +107,13 @@
             Enviar
           </button>
         </div>
+
+        <button 
+            @click="downloadFile()"
+            class="ml-4 bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-6 rounded transition-colors"
+          >
+            Baixar
+          </button>
       </div>
     </div>
   </div>
@@ -125,6 +132,7 @@ export default {
   components: { UserChat, NavBar, FileList },
   data() {
     return {
+      username: "",
       msg: "", // Mensagem do input
       messages: [], // Lista de mensagens exibidas na tela
       currentSection: "conversa",
@@ -152,24 +160,26 @@ export default {
 
     setFile(change_file_event) {
       this.fileName = change_file_event.target.files[0].name;
+      console.log(change_file_event.target.files);
       this.fileObject = change_file_event.target.files[0];
-      console.log(`[INFO] O arquivo ${this.FileName} foi selecionado para upload.`);
+      console.log(`[INFO] O arquivo ${this.fileName} foi selecionado para upload.`);
     },
 
     sendFileInfo() {
          if (this.fileName) {
 		   const fileToUpload = JSON.stringify({
-             Username: userData.username,
+             Username: this.username,
              FileName: this.fileName,
-             UploaderId: uploader.getId()
+             UploaderId: this.uploader.getId()
            });
+
+           console.log(`[INFO] Enviando ${fileToUpload} ao tracker.`);
 
       	   this.trackerSocket.send(`1${fileToUpload}\n`);
           
            //Configura o uploader para escutar por solicitações 
            this.uploader.setFileToUpload(this.fileObject);
-           this.uploader.setList(this.activePeers);
-           this.uploader.setDownloadRequestConn();
+           this.uploader.setList(this.activePeers); 
         }else{
           console.log("[ERROR] Nenhum arquivo foi selecionado.");
         }
@@ -197,8 +207,12 @@ export default {
       });
     },
 
-    handleFileClick(file_info){
+    handleFileClick(file_info) {
       this.fileToDownload = file_info;
+    },
+
+    downloadFile() { 
+      this.downloader.requestDownload(this.fileToDownload.UploaderId, this.fileToDownload.FileName); 
     },
 
     sendMessage() {
@@ -227,6 +241,7 @@ export default {
     this.uploader = new FileUploader();
 
     const userData = JSON.parse(localStorage.getItem("userData"));
+    this.username = userData.username;	
 
     if (userData) {
       this.peer = new Peer();
@@ -258,6 +273,7 @@ export default {
           if (messageType === "3") {
             try {
               this.activePeers = JSON.parse(messageContent);
+              this.uploader.setList(this.activePeers);
             } catch (error) {
               console.error("[ERROR] Falha ao parsear lista de peers:", error);
             }
@@ -266,6 +282,7 @@ export default {
           if (messageType === "4") {
             try {
               this.activeFiles = JSON.parse(messageContent);
+              console.log(this.activeFiles);
             } catch (error) {
               console.error("[ERROR] Falha ao parsear lista de arquivos:", error);
             }
@@ -287,6 +304,10 @@ export default {
       });
 
     }
+
+    this.forwarder.setConnToReceiveData();
+    this.uploader.setDownloadRequestConn();
+    this.downloader.setDownloadConn();
 
     setInterval(() => {
       this.trackerSocket.send("3\n");

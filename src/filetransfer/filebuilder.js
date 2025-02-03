@@ -10,7 +10,7 @@ export default class FileBuilder {
 
 	//Adiciona os dados na construção do blob
 	pushData(binary_data_chunck, index) {
-		if (isClosed) {
+		if (this.isClosed) {
 			console.log('[ERROR] Construtor de arquivo está fechado');			
 	
 			return;
@@ -21,8 +21,8 @@ export default class FileBuilder {
 
 	//Cria um blob a partir dos dados providenciados
 	buildFile() {
-		for (let i=0; i<chuncks_map.size; i++) {
-			chuncks_array.push(chuncks_map.get(i));
+		for (let i=0; i<this.chuncks_map.size; i++) {
+			this.chuncks_array.push(this.chuncks_map.get(i));
 		}
 
 		this.blob = new Blob(this.chuncks_array);
@@ -44,7 +44,7 @@ export default class FileBuilder {
 
 		document.body.appendChild(download_link);
 
-		link.dispatchEvent(
+		download_link.dispatchEvent(
 			new MouseEvent('click', {
 				bubbles: true,
 				cancelable: true,

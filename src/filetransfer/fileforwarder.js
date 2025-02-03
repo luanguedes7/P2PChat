@@ -10,6 +10,8 @@ export default class FileForwarder extends FileSharerPrototype {
 	//Configura o encaminhamento de dados ao peer que está realizando o download
 	forwardData(downloader_id, data) {
 		this.peer.on("error", (err) => {
+            console.log(err);
+
 			if (err.type === 'peer_unavailable') {
 				console.log("[ERROR] Não foi possível solicitar o arquivo!");
 			}
@@ -24,7 +26,8 @@ export default class FileForwarder extends FileSharerPrototype {
 				this.peer_conn = null;
 			});
 
-			this.peer_conn.send(data);	
+			this.peer_conn.send(data);
+            console.log("[INFO] Enviando chunck ao solicitante do download.");	
 		});		
 	}
 	
@@ -36,10 +39,13 @@ export default class FileForwarder extends FileSharerPrototype {
 			this.receiver_conn = data_conn;
 		
 			this.receiver_conn.on("data", (data) => {
+				console.log("[INFO] Recebendo chunck e o encaminhando.");
+
 				const downloader_id = data[0];
 				const chunck = data[1];
 
-				this.forwardData(downloader_id, chunck);	
+				this.forwardData(downloader_id, chunck);
+				this.receiver_conn.close();	
 			});
 
 			this.receiver_conn.on("close", () => {

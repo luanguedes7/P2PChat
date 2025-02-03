@@ -9,7 +9,8 @@ export default class FileDownloader extends FileSharerPrototype {
 		this.file_name = null;
 	}
 
-	requestDownload(uploader_id) {
+	requestDownload(uploader_id, file_name) {
+		this.file_name = file_name;
 		this.connectToPeer(uploader_id);
 		
 		this.peer.on("error", (err) => {
@@ -21,13 +22,13 @@ export default class FileDownloader extends FileSharerPrototype {
 		this.peer_conn.on("open", () => {
 			this.file_builder = new FileBuilder();
 
-			console.log(`[INFO] Solicitando o download do arquivo ${this.file_name}.`);
+			console.log(`[INFO] Solicitando o download do arquivo.`);
 				
 			this.peer_conn.on("close", () => {
 				this.peer_conn = null;
 			});
 
-			uploader_conn.send(this.getId());
+			this.peer_conn.send(this.getId());
 		});	
 	}
 
@@ -54,7 +55,7 @@ export default class FileDownloader extends FileSharerPrototype {
 						break;
 					case 2:
 						this.file_builder.buildFile();
-						this.file_builder.downloadFile();												
+						this.file_builder.downloadFile(this.file_name);												
 						this.file_builder.close();
 						this.file_builder = null;				
 

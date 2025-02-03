@@ -3,9 +3,9 @@ export default class FileStream {
 	constructor(selected_file, buffer_size) {		
 		this.file = selected_file;
 		this.stream = this.file.stream();	
-		this.reader = this.getReader();
-		this.buffer = new Uint8Array(buffer_size);
-		this.buffer_size = buffer_size;
+		this.reader = this.stream.getReader();
+		this.buffer = null;
+		this.buffer_size = 0;
 		this.isClosed = false;
 		this.isEOF = false;
 	}
@@ -13,34 +13,32 @@ export default class FileStream {
 	//Tenta ler 1024 bytes e retorna quantos bytes foram lidos
 	async readChunck() {
 		let counter = 0;
-		
-		this.buffer.fill(0, 0, this.buffer_size);
 
-		if (isClosed) {
+		if (this.isClosed) {
 			console.log(`[ERROR] Leitor está fechado`);
 			return 0;
 		}
 
-		if (isEOF) {
-			console.lof(`[ERROR] Todos os bytes foram lidos`);
+		if (this.isEOF) {
+			console.log("[ERROR] Todos os bytes foram lidos");
 			return -1;
 		}
 
-		while (counter < buffer_size) {
+		while (!this.isEOF) {
 			try {
 				const {value, done} = await this.reader.read();
+							
+				if (done) {
+					this.isEOF = true;
+					break;
+				}
+				
+				this.buffer = value;
+				counter = this.buffer.length;
 			} catch(error) {
 				console.log(`[INFO] ${error}`);
 				break;
-			}			
-			
-			if (done) {
-				this.isEOF = true;
-				break;
 			}
-			
-			this.buffer[counter] = value;
-			counter += 1;
 		}
 
 		return counter;
@@ -53,7 +51,7 @@ export default class FileStream {
 
 	//Fecha a readable stream
 	async close() {
-		await reader.cancel()
+		await this.reader.cancel()
 			.catch((err) => {console.log(`[ERROR] ${err}`)})
 			.then(() => {console.log('[INFO] Leitor de arquivo fechado')});
 
