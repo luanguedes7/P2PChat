@@ -23,7 +23,16 @@
         <div class="bg-[#43655a] py-2 px-3 rounded-tl-xl">
           <h1 class="text-3xl font-semibold text-white">Arquivos</h1>
         </div>
-        <div class="h-[549.7px]"></div>
+        <div class="h-[549.7px] overflow-y-auto">
+          <FileList
+            v-for="(file_info, index) in activeFiles"
+            :key="index"
+            :imageUrl="'src/assets/img/logoUser.png'"
+            :name="String(file_info.Username)"
+			:file="String(file_info.FileName)"
+            @click="handleFileClick(file_info)"
+          />
+		</div>
         <NavBar :currentSection="currentSection" @section-changed="updateSection" />
       </div>
     </section>
@@ -72,10 +81,7 @@
                 placeholder="Digite uma mensagem"
                 class="font-medium p-1 bg-transparent text-[#43655a] placeholder-[#B0B3B8] focus:outline-none rounded-l-xl transition duration-500 ease-linear flex-grow"
               />
-              <button type="submit" class="hidden"></button>
-              <div class="bg-[#43655a] text-white p-1 ml-1 cursor-pointer" @click="updatePeers()">
-                <button><font-awesome-icon :icon="['fas', 'rotate-right']" size="lg" /></button>
-              </div>
+              <button type="submit" class="hidden"></button> 
             </div>
           </form>
         </div>
@@ -101,6 +107,13 @@
             Enviar
           </button>
         </div>
+
+        <button 
+            @click="downloadFile()"
+            class="ml-4 bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-6 rounded transition-colors"
+          >
+            Baixar
+          </button>
       </div>
     </div>
   </div>
@@ -108,24 +121,34 @@
 
 <script>
 import UserChat from "../shared/userChat.vue";
+import FileList from "../shared/filesList.vue";
 import NavBar from "../shared/navBar.vue";
 import Peer from "peerjs";
+import FileDownloader from "../../filetransfer/filedownloader.js";
+import FileForwarder from "../../filetransfer/fileforwarder.js";
+import FileUploader from "../../filetransfer/fileuploader.js";
 
 export default {
-  components: { UserChat, NavBar },
+  components: { UserChat, NavBar, FileList },
   data() {
     return {
+      username: "",
       msg: "", // Mensagem do input
       messages: [], // Lista de mensagens exibidas na tela
       currentSection: "conversa",
       socket: null,
       activePeers: [],
+      activeFiles: [],
+      fileToDownload: null,
       peer: null,
       peerId: null, // ID do Peer atual
       fileName: null,
       fileObject: null,
       currentConnection: null,
       currentPeer: null, // Informações do peer atual conectado
+      downloader: null,
+      uploader: null,
+      forwarder: null
     };
   },
 
@@ -137,13 +160,26 @@ export default {
 
     setFile(change_file_event) {
       this.fileName = change_file_event.target.files[0].name;
+      console.log(change_file_event.target.files);
       this.fileObject = change_file_event.target.files[0];
-      console.log(`[INFO] O arquivo ${this.FileName} foi selecionado para upload.`);
+      console.log(`[INFO] O arquivo ${this.fileName} foi selecionado para upload.`);
     },
 
     sendFileInfo() {
-        if (this.fileName) {
-      	  this.trackerSocket.send("1"+this.fileName+"\n");
+         if (this.fileName) {
+		   const fileToUpload = JSON.stringify({
+             Username: this.username,
+             FileName: this.fileName,
+             UploaderId: this.uploader.getId()
+           });
+
+           console.log(`[INFO] Enviando ${fileToUpload} ao tracker.`);
+
+      	   this.trackerSocket.send(`1${fileToUpload}\n`);
+          
+           //Configura o uploader para escutar por solicitações 
+           this.uploader.setFileToUpload(this.fileObject);
+           this.uploader.setList(this.activePeers); 
         }else{
           console.log("[ERROR] Nenhum arquivo foi selecionado.");
         }
@@ -171,6 +207,14 @@ export default {
       });
     },
 
+    handleFileClick(file_info) {
+      this.fileToDownload = file_info;
+    },
+
+    downloadFile() { 
+      this.downloader.requestDownload(this.fileToDownload.UploaderId, this.fileToDownload.FileName); 
+    },
+
     sendMessage() {
       if (this.currentConnection && this.msg.trim()) {
         const message = {
@@ -189,13 +233,15 @@ export default {
       }
     },
 
-    updatePeers() {
-        this.trackerSocket.send("3\n");
-    }
   },
 
   async mounted() {
+    this.downloader = new FileDownloader();
+    this.forwarder = new FileForwarder();
+    this.uploader = new FileUploader();
+
     const userData = JSON.parse(localStorage.getItem("userData"));
+    this.username = userData.username;	
 
     if (userData) {
       this.peer = new Peer();
@@ -211,20 +257,34 @@ export default {
           const userDataMessage = JSON.stringify({
             Username: userData.username,
             Id: peerId,
+            ForwarderId: this.forwarder.getId()
           });
           this.trackerSocket.send(`2${userDataMessage}\n`);
           this.trackerSocket.send("3\n");
+		  this.trackerSocket.send("4\n");
         };
 
         this.trackerSocket.onmessage = (event) => {
           const messageType = event.data[0];
           const messageContent = event.data.slice(1);
+			
+          console.log("[INFO] Mensagem recebida do tracker: " + messageContent);
 
           if (messageType === "3") {
             try {
               this.activePeers = JSON.parse(messageContent);
+              this.uploader.setList(this.activePeers);
             } catch (error) {
               console.error("[ERROR] Falha ao parsear lista de peers:", error);
+            }
+          }
+
+          if (messageType === "4") {
+            try {
+              this.activeFiles = JSON.parse(messageContent);
+              console.log(this.activeFiles);
+            } catch (error) {
+              console.error("[ERROR] Falha ao parsear lista de arquivos:", error);
             }
           }
         };
@@ -244,6 +304,15 @@ export default {
       });
 
     }
+
+    this.forwarder.setConnToReceiveData();
+    this.uploader.setDownloadRequestConn();
+    this.downloader.setDownloadConn();
+
+    setInterval(() => {
+      this.trackerSocket.send("3\n");
+      this.trackerSocket.send("4\n");
+    }, 5000);
   },
 };
 </script>
