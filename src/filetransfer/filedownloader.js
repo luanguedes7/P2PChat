@@ -5,8 +5,15 @@ export default class FileDownloader extends FileSharerPrototype {
 	constructor() {
 		super();
 		this.file_builder = null;
-		this.data_conn = null;
 		this.file_name = null;
+	}
+
+	async checkFileSize(size) {
+		return new Promise((resolve, reject) => {
+			while (this.file_builder.getChuncksNum() < size) {}
+			resolve("OK");
+			return;
+		});
 	}
 
 	requestDownload(uploader_id, file_name) {
@@ -35,15 +42,16 @@ export default class FileDownloader extends FileSharerPrototype {
 	setDownloadConn() {
 		this.peer.on("connection", (data_conn) => {
 			//Inicialização da conexão
-			this.data_conn = data_conn;
 			console.log("[INFO] Conexão com peer para download iniciada.");
 			
 			//Processamento dos dados recebidos na conexão para download
-			this.data_conn.on("data", (data) => {
+			data_conn.on("data", async (data) => {
 				let chunck_size = 0;
 				let chunck_data = null;
 				let chunck_order = 0;				
 
+				console.log(data);	
+	
 				switch (data[0]) {
 					case 1:
 						chunck_size = data[1];
@@ -54,6 +62,8 @@ export default class FileDownloader extends FileSharerPrototype {
 						console.log(`[INFO] Chunck de ${chunck_size} bytes recebido.`);
 						break;
 					case 2:
+						await this.checkFileSize(data[1]);
+
 						this.file_builder.buildFile();
 						this.file_builder.downloadFile(this.file_name);												
 						this.file_builder.close();
@@ -63,7 +73,7 @@ export default class FileDownloader extends FileSharerPrototype {
 						break;
 				}
 
-				this.data_conn.close();
+				data_conn.close();
 			});	
 		});
 	}

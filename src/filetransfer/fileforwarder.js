@@ -4,7 +4,6 @@ import FileSharerPrototype from "./sharerinterface.js";
 export default class FileForwarder extends FileSharerPrototype {
 	constructor() {
 		super();
-		this.receiver_conn = null;
 	}
 	
 	//Configura o encaminhamento de dados ao peer que está realizando o download
@@ -17,17 +16,18 @@ export default class FileForwarder extends FileSharerPrototype {
 			}
 		});
 
-		this.connectToPeer(downloader_id);
-		this.peer_conn.on("open", () => {
+		let forward_conn = this.peer.connect(downloader_id);
+
+		forward_conn.on("open", () => {
 			console.log("[INFO] Abrindo conexão para encaminhar dados.");
 
-			this.peer_conn.on("close", () => {
+			forward_conn.on("close", () => {
 				console.log("[INFO] Fechando conexão de encaminhamento de dados.");
-				this.peer_conn = null;
 			});
 
-			this.peer_conn.send(data);
-            console.log("[INFO] Enviando chunck ao solicitante do download.");	
+			forward_conn.send(data);
+            console.log("[INFO] Enviando chunck ao solicitante do download.");
+			console.log(data);	
 		});		
 	}
 	
@@ -35,21 +35,18 @@ export default class FileForwarder extends FileSharerPrototype {
 	setConnToReceiveData() {
 		this.peer.on("connection", (data_conn) => {
 			console.log("[INFO] Criando conexão para receber dados do uploader.");
-
-			this.receiver_conn = data_conn;
 		
-			this.receiver_conn.on("data", (data) => {
+			data_conn.on("data", (data) => {
 				console.log("[INFO] Recebendo chunck e o encaminhando.");
 
 				const downloader_id = data[0];
 				const chunck = data[1];
 
 				this.forwardData(downloader_id, chunck);
-				this.receiver_conn.close();	
+				data_conn.close();	
 			});
 
-			this.receiver_conn.on("close", () => {
-				this.receiver_conn = null;
+			data_conn.on("close", () => {
 				console.log("[INFO] Finalizando conexão de recebimento de dados para encaminhamento.");
 			});	
 		});

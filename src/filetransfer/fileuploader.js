@@ -61,9 +61,9 @@ export default class FileUploader extends FileSharerPrototype {
 				chunck = this.file_reader.getBufferedData();
 
 				let waitSend = new Promise((resolve, reject) => {	
-					this.connectToPeer(this.peers_list[i].ForwarderId);			
-					this.peer_conn.on("open", () => {
-						this.peer_conn.on("close", () => {
+					let upload_conn = this.peer.connect(this.peers_list[i].ForwarderId);			
+					upload_conn.on("open", () => {
+						upload_conn.on("close", () => {
 							console.log("[INFO] Fechando conexão com o forwarder.");
 						});
 
@@ -71,7 +71,8 @@ export default class FileUploader extends FileSharerPrototype {
 						
 						//Se retornar EOF, sinaliza o fim do arquivo, a conexão é terminada e o loop é quebrado
 						if (bytes_read === -1) {
-							this.peer_conn.send([downloader_id, [2, "EOF"]]);
+							upload_conn.send([downloader_id, [2, chunck_index]]);
+							console.log("[INFO] Envio de arquivo finalizado!");
 							resolve("OK");
 							return;
 						}
@@ -79,7 +80,7 @@ export default class FileUploader extends FileSharerPrototype {
 						//Envia o chunck
 						console.log("[INFO] Enviando chunck ao forwarder.");
 
-						this.peer_conn.send([downloader_id, [1, bytes_read, chunck_index, chunck]]);
+						upload_conn.send([downloader_id, [1, bytes_read, chunck_index, chunck]]);
 						chunck_index += 1;
 						resolve("OK");
 					});
