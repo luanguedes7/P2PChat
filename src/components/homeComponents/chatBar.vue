@@ -102,18 +102,20 @@
 
           <button 
             @click="sendFileInfo()"
-            class="ml-4 bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-6 rounded transition-colors"
+            class="ml-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-6 rounded transition-colors"
           >
             Enviar
           </button>
-        </div>
 
-        <button 
+          <button 
             @click="downloadFile()"
-            class="ml-4 bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-6 rounded transition-colors"
+            class="ml-6 bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-6 rounded transition-colors"
           >
             Baixar
           </button>
+        </div>
+
+        
       </div>
     </div>
   </div>

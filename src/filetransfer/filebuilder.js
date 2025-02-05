@@ -8,6 +8,10 @@ export default class FileBuilder {
 		this.blob = null;
 	}
 
+	getChuncksNum() {
+		return this.chuncks_map.size;
+	}
+
 	//Adiciona os dados na construção do blob
 	pushData(binary_data_chunck, index) {
 		if (this.isClosed) {
