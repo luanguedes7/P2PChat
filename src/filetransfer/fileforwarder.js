@@ -27,7 +27,8 @@ export default class FileForwarder extends FileSharerPrototype {
 
 			forward_conn.send(data);
             console.log("[INFO] Enviando chunck ao solicitante do download.");
-			console.log(data);	
+			console.log(data);
+			forward_conn.close();	
 		});		
 	}
 	

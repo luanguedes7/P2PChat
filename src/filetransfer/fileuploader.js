@@ -73,6 +73,7 @@ export default class FileUploader extends FileSharerPrototype {
 						if (bytes_read === -1) {
 							upload_conn.send([downloader_id, [2, chunck_index]]);
 							console.log("[INFO] Envio de arquivo finalizado!");
+							upload_conn.close();
 							resolve("OK");
 							return;
 						}
@@ -81,6 +82,7 @@ export default class FileUploader extends FileSharerPrototype {
 						console.log("[INFO] Enviando chunck ao forwarder.");
 
 						upload_conn.send([downloader_id, [1, bytes_read, chunck_index, chunck]]);
+						upload_conn.close();
 						chunck_index += 1;
 						resolve("OK");
 					});
