@@ -1,7 +1,7 @@
-# P2P Chat - Aplicação Vue.js com WebRTC
+# P2P Chat - Aplicação Vue.js com WebRTC e PeerJS
 
 ## Descrição
-Este é um aplicativo de chat peer-to-peer (P2P) desenvolvido com Vue.js e Tailwind CSS, utilizando WebRTC para comunicação direta entre usuários. O projeto permite o envio de mensagens e compartilhamento de arquivos sem a necessidade de um servidor central.
+Este é um aplicativo de chat peer-to-peer (P2P) desenvolvido com Vue.js e Tailwind CSS, utilizando WebRTC e PeerJS para comunicação direta entre usuários. O projeto permite o envio de mensagens e compartilhamento de arquivos sem a necessidade de um servidor central.
 
 ## Estrutura do Projeto
 A seguir, detalhamos a estrutura de diretórios e os principais arquivos do projeto.
@@ -43,7 +43,7 @@ Armazena componentes Vue reutilizáveis.
 - **`Login.vue`**: Tela de login, permite ao usuário acessar a aplicação.
 
 #### `homeComponents/`
-- **`chatBar.vue`**: Barra lateral do chat, mostrando usuários conectados.
+- **`chatBar.vue`**: Barra lateral do chat, mostrando usuários conectados e gerenciando conexões PeerJS.
 - **`chatConversation.vue`**: Componente responsável pela exibição das mensagens trocadas.
 
 #### `shared/`
@@ -65,8 +65,12 @@ Gerencia o compartilhamento de arquivos via WebRTC.
 ### Diretório `src/router/`
 - **`index.js`**: Configuração das rotas do Vue Router para navegação entre páginas.
 
-### Diretório `src/trackerintegration/`
-- **`tracker.js`**: Implementação da comunicação com servidores de rastreamento WebRTC.
+## Tecnologias Utilizadas
+- Vue.js
+- Tailwind CSS
+- WebRTC
+- PeerJS
+- Vite
 
 ## Como Rodar o Projeto
 
@@ -81,12 +85,6 @@ Gerencia o compartilhamento de arquivos via WebRTC.
    ```
 
 3. Acesse a aplicação no navegador pelo endereço exibido no terminal.
-
-## Tecnologias Utilizadas
-- Vue.js
-- Tailwind CSS
-- WebRTC
-- Vite
 
 ## Licença
 Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
