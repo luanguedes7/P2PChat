@@ -88,8 +88,8 @@
       </div>
       <div v-if="currentSection === 'arquivos'" class="p-6 text-white col-span-7 bg-[#43655a] rounded-r-lg">
         <h2 class="text-2xl font-semibold mb-3">Seção de Arquivos</h2>
-        <p class="text-white mb-6">Aqui devem estar os arquivos da rede</p>
-        
+        <p class="text-white mb-1">Aqui devem estar os arquivos da rede</p>
+
         <div class="space-y-4">
           <label class="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded cursor-pointer transition-colors inline-block">
             Selecionar Arquivo
@@ -115,6 +115,28 @@
           </button>
         </div>
 
+        <div class="mt-10">
+          <h2 class="text-xl font-semibold mb-3">Seletor de Banda</h2>
+          <p class="text-white mb-2">Selecione sua prioridade</p>
+
+          <div>
+            <form action="" class="flex items-center space-x-4">
+              <select name="nivel" id="nivel" class="text-black bg-white border border-gray-300 rounded px-4 py-2">
+                <option value="baixa">Baixa</option>
+                <option value="media">Média</option>
+                <option value="alta">Alta</option>
+              </select>
+
+              <button 
+                @click="downloadFile()"
+                class=" bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-6 rounded transition-colors"
+              >
+                Escolher
+              </button>
+            </form>
+          </div>
+          
+        </div>
         
       </div>
     </div>
