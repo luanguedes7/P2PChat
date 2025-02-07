@@ -1,3 +1,4 @@
+//Gera o hash CRC para os dados binários
 export default function GetCrcHash(binary_data) {
 	const polynome = 0xEDB88320;
 	let crc_hash = 0xFFFFFFFF;

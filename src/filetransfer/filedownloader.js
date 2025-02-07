@@ -7,7 +7,8 @@ export default class FileDownloader extends FileSharerPrototype {
 		super();
 		this.file_builder = null;
 		this.file_name = null;
-		this.start_time;
+		this.start_time = null;
+		this.isCorrupted = false;
 	}
 
 	async checkFileSize(size) {
@@ -22,9 +23,12 @@ export default class FileDownloader extends FileSharerPrototype {
 		this.start_time = Date.now();
 	}
 
+	resetCount() {
+		this.start_time = null;
+	}
+
 	getElapsedTime() {
 		const final_count = (Date.now() - this.start_time)/1000;	
-		this.start_time = null;
 
 		return final_count;
 	}
@@ -77,7 +81,7 @@ export default class FileDownloader extends FileSharerPrototype {
 						
 						//Verifica o hash do CRC para identificar erros
 						if (hash_from_message != new_hash) {
-							alert("Arquivo corrompido!");
+							this.isCorrupted = true;
 						}
 		
 						this.file_builder.pushData(chunck_data, chunck_order);						
@@ -94,6 +98,12 @@ export default class FileDownloader extends FileSharerPrototype {
 
 						console.log("[INFO] Download concluído com sucesso!");
 						console.log(`[INFO] O download levou ${this.getElapsedTime()} segundos.`);
+						this.resetCount();
+
+						if (this.isCorrupted) {
+							alert("AVISO! O arquivo baixado está corrompido devido à problemas na rede.");
+						}
+
 						break;
 				}
 
