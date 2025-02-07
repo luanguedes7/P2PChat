@@ -8,8 +8,8 @@ export default class FileUploader extends FileSharerPrototype {
 		super();
 		this.peers_list = null;
 		this.file_reader = null;
-		this.file_object = null;
-	}
+		this.file_object = null; 
+	}	
 
 	setList(list) {
 		this.peers_list = list;
@@ -33,68 +33,120 @@ export default class FileUploader extends FileSharerPrototype {
 	}
 	
 	//Envia os dados aos forwarders
-	async sendData(downloader_id) {
+	async sendData(request_data) {
         console.log("[INFO] Lendo arquivo.");
+		
+		const request = JSON.parse(request_data);
+		const downloader_id = request.Id;
+		const priority = request.Priority;		
 
 		let chunck = null;
 		let bytes_read = 0;
 		let chunck_index = 0;
 		let check_sum = 0;
-		
+		let chunck_to_send = [];
+		let division = 0;
+		let i = 0;
+		let start_chunck = null;
+		let finish_chunck = null;
+
 		//Lê os dados, abre uma nova conexão, envia os dados e fecha a conexão
 		while (bytes_read != -1) {
-			for (let i=0; i<this.peers_list.length; i++) {
-				let continue_flag = false;
-				let open_flag = false;
-	
-				//Se a conexão não ocorrer, tentar com o próximo peer
-				this.peer.on("error", (err) => {
-					if (err.type === 'peer_unavailable') {
-						continue_flag = true;
-					}
-				});
+			let continue_flag = false;
+			let open_flag = false;
 
-				if (continue_flag) {
-					continue;
+			//Se a conexão não ocorrer, tentar com o próximo peer
+			this.peer.on("error", (err) => {
+				if (err.type === 'peer_unavailable') {
+					continue_flag = true;
 				}
+			});
 
-				//Lê um chunck do arquivo
-				bytes_read = await this.file_reader.readChunck();
-				chunck = this.file_reader.getBufferedData();
-				check_sum = GetCrcHash(chunck);
-
-				//Cria uma promise que resolve quando o chunck for enviado ao forwarder
-				let waitSend = new Promise((resolve, reject) => {	
-					let upload_conn = this.peer.connect(this.peers_list[i].ForwarderId);			
-					upload_conn.on("open", () => {
-						upload_conn.on("close", () => {
-							console.log("[INFO] Fechando conexão com o forwarder.");
-						});
-
-						console.log("[INFO] Conexão com o forwarder aberta.");	
-						
-						//Se retornar EOF, sinaliza o fim do arquivo, a conexão é terminada e o loop é quebrado
-						if (bytes_read === -1) {
-							upload_conn.send([downloader_id, [2, chunck_index]]);
-							console.log("[INFO] Envio de arquivo finalizado!");
-							resolve("OK");
-							return;
-						}
-						
-						//Envia o chunck
-						console.log("[INFO] Enviando chunck ao forwarder.");
-
-						upload_conn.send([downloader_id, [1, bytes_read, chunck_index, chunck, check_sum]]);
-						chunck_index += 1;
-						resolve("OK");
-					});
-				});
-
-				//Aguarda a resolução da promise antes de continuar a iteração
-				await waitSend.then(() => {
-					console.log("[INFO] Chunck enviado com sucesso ao forwarder.");
-				});
+			if (continue_flag) {
+				continue;
 			}
+
+			//Lê um chunck do arquivo
+			bytes_read = await this.file_reader.readChunck();
+			chunck = this.file_reader.getBufferedData();	
+			
+			if (priority === "alta" ) {
+				chunck_to_send.push(chunck);
+			} if else (priority === "media") {
+				division = Math.trunc(chunck.length/5);
+				start_chunck = 0;
+				finish_chunck = division;
+
+				for (let w = 0; w<4; w++) {
+					chunck_to_send.push(chunck[start_chunck:finish_chunck]);
+					start_chunck = finish_chunck;
+					finish_chunck = finish_chunck + division;
+				}
+			
+				chunck_to_send.push(chunck[start_chunck:chunck.length]);
+			} else {
+				division = Math.trunc(chunck.length/10);
+				start_chunck = 0;
+				finish_chunck = division;
+
+				for (let w = 0; w<9; w++) {
+					chunck_to_send.push(chunck[start_chunck:finish_chunck]);
+					start_chunck = finish_chunck;
+					finish_chunck = finish_chunck + division;
+				}
+			
+				chunck_to_send.push(chunck[start_chunck:chunck.length]);
+			}
+
+			//Cria uma promise que resolve quando o chunck for enviado ao forwarder
+			let waitSend = new Promise(async (resolve, reject) => {	
+				for (let k=0; k<chunck_to_send.length; k++) {
+					if (i >= this.peers_list.length) {
+						i = 0;
+					}
+					
+					//Gera o hash para o chunck a ser enviado
+					check_sum = GetCrcHash(chunck_to_send[k]);
+
+					let upload_conn = this.peer.connect(this.peers_list[i].ForwarderId);
+					let waitIteration = new Promise((resolve, reject) => {		
+						upload_conn.on("open", () => {
+							upload_conn.on("close", () => {
+								console.log("[INFO] Fechando conexão com o forwarder.");
+							});
+
+							console.log("[INFO] Conexão com o forwarder aberta.");	
+							
+							//Se retornar EOF, sinaliza o fim do arquivo, a conexão é terminada e o loop é quebrado
+							if (bytes_read === -1) {
+								upload_conn.send([downloader_id, [2, chunck_index]]);
+								console.log("[INFO] Envio de arquivo finalizado!");
+								resolve("OK");
+								return;
+							}
+							
+							//Envia o chunck
+							console.log("[INFO] Enviando chunck ao forwarder.");
+							upload_conn.send([downloader_id, [1, bytes_read, chunck_index, chunck_to_send[k], check_sum]]);	
+							chunck_index += 1;
+							resolve("OK");
+						});
+					}	
+					
+					await waitIteration();
+					i += 1;
+				}
+	
+				resolve("OK");
+			});
+
+			//Aguarda a resolução da promise antes de continuar a iteração
+			await waitSend.then(() => {
+				console.log("[INFO] Chunck enviado com sucesso ao forwarder.");
+			});
+			
+			//Remove os chuncks da lista
+			chunck_to_send = [];
 		}
 		
 		//Após o arquivo inteiro ser enviado, o leitor de arquivos é fechado

@@ -9,6 +9,11 @@ export default class FileDownloader extends FileSharerPrototype {
 		this.file_name = null;
 		this.start_time = null;
 		this.isCorrupted = false;
+		this.priority = "baixa";
+	}
+
+	setPriority(prioriry) {
+		this.priority = priority;
 	}
 
 	async checkFileSize(size) {
@@ -52,7 +57,7 @@ export default class FileDownloader extends FileSharerPrototype {
 				this.peer_conn = null;
 			});
 
-			this.peer_conn.send(this.getId());
+			this.peer_conn.send(JSON.stringify({Id: this.getId(), Priority: this.priority}));
 			this.startCount();
 		});	
 	}
