@@ -137,6 +137,12 @@
           </div>
           
         </div>
+
+        <div class="mt-10">
+          <h2 class="text-xl font-semibold mb-3">Tempo de Download</h2>
+          <p class="text-white mb-2">Tempo de download: ms</p>
+          
+        </div>
         
       </div>
     </div>
