@@ -24,21 +24,29 @@ export default class FileDownloader extends FileSharerPrototype {
 			return;
 		});
 	}
-
+	
+	//Inicia o cronômetro
 	startCount() {
 		this.start_time = Date.now();
 	}
 
+	//Reseta o cronômetro
 	resetCount() {
 		this.start_time = null;
 	}
 
+	//Retorna a contagem
 	getElapsedTime() {
+		if (this.start_time === null) {
+			return null;
+		}
+
 		const final_count = (Date.now() - this.start_time)/1000;	
 
 		return final_count;
 	}
 
+	//Requisita o download para o uplaoder
 	requestDownload(uploader_id, file_name) {
 		this.file_name = file_name;
 		this.connectToPeer(uploader_id);
@@ -89,7 +97,7 @@ export default class FileDownloader extends FileSharerPrototype {
 						console.log(new_hash);
 	
 						//Verifica o hash do CRC para identificar erros
-						if (hash_from_message != new_hash) {
+						if (hash_from_message != new_hash && new_hash != undefined) {
 							this.isCorrupted = true;
 						}
 		

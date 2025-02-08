@@ -140,7 +140,7 @@
 
         <div class="mt-10">
           <h2 class="text-xl font-semibold mb-3">Tempo de Download</h2>
-          <p class="text-white mb-2">Tempo de download: ms</p>
+          <p class="text-white mb-2">Tempo de download: {{this.tempo_decorrido}} s</p>
           
         </div>
         
@@ -179,7 +179,8 @@ export default {
       downloader: null,
       uploader: null,
       forwarder: null,
-      priority: ""
+      priority: "",
+      tempo_decorrido: 0
     };
   },
 
@@ -248,7 +249,7 @@ export default {
 
     downloadFile() { 
       this.downloader.requestDownload(this.fileToDownload.UploaderId, this.fileToDownload.FileName); 
-    },
+    }, 	
 
     sendMessage() {
       if (this.currentConnection && this.msg.trim()) {
@@ -342,9 +343,12 @@ export default {
 
     this.forwarder.setConnToReceiveData();
     this.uploader.setDownloadRequestConn();
-    this.downloader.setDownloadConn();
+    this.downloader.setDownloadConn();	
 
     setInterval(() => {
+      if (this.downloader.getElapsedTime() != null) {
+		  this.tempo_decorrido = this.downloader.getElapsedTime();
+      }
       this.trackerSocket.send("3\n");
       this.trackerSocket.send("4\n");
     }, 5000);
