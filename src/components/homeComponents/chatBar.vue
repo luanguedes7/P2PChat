@@ -120,15 +120,15 @@
           <p class="text-white mb-2">Selecione sua prioridade</p>
 
           <div>
-            <form action="" class="flex items-center space-x-4">
-              <select name="nivel" id="nivel" class="text-black bg-white border border-gray-300 rounded px-4 py-2">
+            <form @submit.prevent="selectPriority" class="flex items-center space-x-4">
+              <select name="nivel" v-model="priority" id="nivel" class="text-black bg-white border border-gray-300 rounded px-4 py-2">
                 <option value="baixa">Baixa</option>
                 <option value="media">Média</option>
                 <option value="alta">Alta</option>
               </select>
 
               <button 
-                @click="downloadFile()"
+				type="submit"
                 class=" bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-6 rounded transition-colors"
               >
                 Escolher
@@ -178,7 +178,8 @@ export default {
       currentPeer: null, // Informações do peer atual conectado
       downloader: null,
       uploader: null,
-      forwarder: null
+      forwarder: null,
+      priority: ""
     };
   },
 
@@ -186,6 +187,10 @@ export default {
     updateSection(section) {
       this.currentSection = section;
       this.$emit("section-changed", section);
+    },
+
+    selectPriority() {
+      this.downloader.setPriority(this.priority.trim());
     },
 
     setFile(change_file_event) {
@@ -250,7 +255,7 @@ export default {
         const message = {
           text: this.msg.trim(),
           senderId: this.peerId,
-          senderName: JSON.parse(localStorage.getItem("userData")).username,
+          senderName: this.username,
           receiverId: this.currentPeer.Id,
           receiverName: this.currentPeer.Username,
         };

@@ -1,6 +1,7 @@
 import { Peer } from "peerjs";
 import FileSharerPrototype from "./sharerinterface.js";
 import FileStream from "./filereader.js";
+import GetCrcHash from "./crcmodule.js";
 
 export default class FileUploader extends FileSharerPrototype {
 	constructor() {
@@ -32,33 +33,71 @@ export default class FileUploader extends FileSharerPrototype {
 	}
 	
 	//Envia os dados aos forwarders
-	async sendData(downloader_id) {
+	async sendData(request_data) {
         console.log("[INFO] Lendo arquivo.");
-
+		
+		const downloader_id = request_data.Id;
+		const priority = request_data.Priority;	
 		let chunck = null;
+		let chuncks_to_send = [];
+		let chunck_hash = null;
 		let bytes_read = 0;
 		let chunck_index = 0;
+		let i = 0;
+		let divisor = 0;
+		let w = 0;
 		
 		//Lê os dados, abre uma nova conexão, envia os dados e fecha a conexão
-		while (bytes_read != -1) {
-			for (let i=0; i<this.peers_list.length; i++) {
-				let continue_flag = false;
-				let open_flag = false;
-	
-				//Se a conexão não ocorrer, tentar com o próximo peer
-				this.peer.on("error", (err) => {
-					if (err.type === 'peer_unavailable') {
-						continue_flag = true;
-					}
-				});
+		while (bytes_read != -1) {	
+			let continue_flag = false;
+			let open_flag = false;
 
-				if (continue_flag) {
-					continue;
+			//Se a conexão não ocorrer, tentar com o próximo peer
+			this.peer.on("error", (err) => {
+				if (err.type === 'peer_unavailable') {
+					continue_flag = true;
 				}
+			});
 
-				//Lê um chunck do arquivo
-				bytes_read = await this.file_reader.readChunck();
-				chunck = this.file_reader.getBufferedData();
+			if (continue_flag) {
+				continue;
+			}	
+
+			//Lê um chunck do arquivo
+			bytes_read = await this.file_reader.readChunck();
+			chunck = this.file_reader.getBufferedData();
+			
+			//Separa o chunck em subchuncks dependendo da prioridade
+			if (bytes_read != -1) {
+				switch (priority) {
+					case "alta":
+						chuncks_to_send.push(chunck);	
+						break;
+					case "media":
+						divisor = Math.trunc(chunck.length/5);
+						for (w=0; w<4; w++) {
+							chuncks_to_send.push(chunck.slice(divisor*w, divisor*(w+1)));
+						}
+						chuncks_to_send.push(chunck.slice(divisor*4, chunck.length));
+			
+						break;
+					case "baixa":
+						divisor = Math.trunc(chunck.length/10);
+						for (w=0; w<9; w++) {
+							chuncks_to_send.push(chunck.slice(divisor*w, divisor*(w+1)));
+						}
+						chuncks_to_send.push(chunck.slice(divisor*9, chunck.length));
+
+						break;
+				}
+			}else{
+				chuncks_to_send.push("EOF");
+			}
+
+			for (let k=0; k<chuncks_to_send.length; k++) {
+				if (i >= this.peers_list.length) {
+					i = 0;
+				}	
 
 				let waitSend = new Promise((resolve, reject) => {	
 					let upload_conn = this.peer.connect(this.peers_list[i].ForwarderId);			
@@ -79,8 +118,9 @@ export default class FileUploader extends FileSharerPrototype {
 						
 						//Envia o chunck
 						console.log("[INFO] Enviando chunck ao forwarder.");
-
-						upload_conn.send([downloader_id, [1, bytes_read, chunck_index, chunck]]);
+						
+						chunck_hash = GetCrcHash(chuncks_to_send[k]);
+						upload_conn.send([downloader_id, [1, bytes_read, chunck_index, chuncks_to_send[k], chunck_hash]]);
 						chunck_index += 1;
 						resolve("OK");
 					});
@@ -89,7 +129,15 @@ export default class FileUploader extends FileSharerPrototype {
 				await waitSend.then(() => {
 					console.log("[INFO] Chunck enviado com sucesso ao forwarder.");
 				});
+				
+				i += 1;
+
+				if (bytes_read === -1) {
+					break;
+				}
 			}
+
+			chuncks_to_send = [];
 		}
 		
 		//Após o arquivo inteiro ser enviado, o leitor de arquivos é fechado
