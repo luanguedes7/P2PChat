@@ -120,7 +120,7 @@
           <p class="text-white mb-2">Selecione sua prioridade</p>
 
           <div>
-            <form action="" class="flex items-center space-x-4">
+            <form @submit.prevent="selectPriority" class="flex items-center space-x-4">
               <select name="nivel" v-model="priority" id="nivel" class="text-black bg-white border border-gray-300 rounded px-4 py-2">
                 <option value="baixa">Baixa</option>
                 <option value="media">Média</option>
@@ -128,7 +128,7 @@
               </select>
 
               <button 
-                @click="selectPriority()"
+				type="submit"
                 class=" bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-6 rounded transition-colors"
               >
                 Escolher
@@ -184,7 +184,7 @@ export default {
     },
 
     selectPriority() {
-      this.downloader.setPriority(this.priority);
+      this.downloader.setPriority(this.priority.trim());
     },
 
     setFile(change_file_event) {

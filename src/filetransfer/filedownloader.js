@@ -12,8 +12,9 @@ export default class FileDownloader extends FileSharerPrototype {
 		this.priority = "baixa";
 	}
 
-	setPriority(prioriry) {
+	setPriority(priority) {
 		this.priority = priority;
+		console.log(this.priority);
 	}
 
 	async checkFileSize(size) {
@@ -57,7 +58,7 @@ export default class FileDownloader extends FileSharerPrototype {
 				this.peer_conn = null;
 			});
 
-			this.peer_conn.send(JSON.stringify({Id: this.getId(), Priority: this.priority}));
+			this.peer_conn.send({Id: this.getId(), Priority: this.priority});
 			this.startCount();
 		});	
 	}
@@ -84,6 +85,9 @@ export default class FileDownloader extends FileSharerPrototype {
 						hash_from_message = data[4];
 						new_hash = GetCrcHash(chunck_data);
 						
+						console.log(hash_from_message);
+						console.log(new_hash);
+	
 						//Verifica o hash do CRC para identificar erros
 						if (hash_from_message != new_hash) {
 							this.isCorrupted = true;
